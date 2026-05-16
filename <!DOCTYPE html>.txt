@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Space Out Smoke & Vape — Manager System</title>
+
+<!-- PWA -->
+
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Space Out">
+<meta name="theme-color" content="#3b82f6">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--border2:#cbd5e1;--accent:#3b82f6;--accent-light:#eff6ff;--green:#16a34a;--green-light:#f0fdf4;--red:#dc2626;--red-light:#fef2f2;--orange:#ea580c;--orange-light:#fff7ed;--yellow:#ca8a04;--yellow-light:#fefce8;--purple:#7c3aed;--purple-light:#f5f3ff;--text:#0f172a;--text2:#334155;--text3:#64748b;--text4:#94a3b8;--shadow:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 6px rgba(0,0,0,.07);--shadow-lg:0 10px 15px rgba(0,0,0,.08);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;min-height:100vh;}
+.ar-font{font-family:'Tajawal',sans-serif!important;}
+.lang-ar .en-t{display:none!important;}.lang-ar .ar-t{display:inline!important;}.lang-en .ar-t{display:none!important;}.ar-t{display:none;}.lang-ar{direction:rtl;}.lang-ar th,.lang-ar label{text-align:right;}
+header{background:var(--surface);border-bottom:2px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow-md);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(59,130,246,.3);}
+.logo-name{font-size:18px;font-weight:800;color:var(--text);}
+.logo-sub{font-size:12px;color:var(--text3);font-weight:500;margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.sync-indicator{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;background:var(--green-light);color:var(--green);border:1px solid #86efac;}
+.sync-indicator.syncing{background:var(--accent-light);color:var(--accent);border-color:#93c5fd;}
+.sync-indicator.error{background:var(--red-light);color:var(--red);border-color:#fca5a5;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.lang-toggle{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;border:1px solid var(--border2);}
+.lang-btn{padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;transition:all .2s;background:transparent;color:var(--text3);}
+.lang-btn.active{background:var(--accent);color:white;}
+nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 20px;gap:2px;}
+nav::-webkit-scrollbar{height:0;}
+.nav-btn{padding:16px 18px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+.nav-btn:hover{color:var(--text);background:var(--bg);}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+main{padding:24px;max-width:1280px;margin:0 auto;}
+.panel{display:none;animation:fadeIn .25s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-size:24px;font-weight:800;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.page-sub{font-size:14px;color:var(--text3);margin-bottom:20px;font-weight:500;}
+.grid{display:grid;gap:16px;}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);transition:box-shadow .2s;}
+.card:hover{box-shadow:var(--shadow-md);}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px;}
+.stat-num{font-size:36px;font-weight:800;line-height:1;}
+.stat-sub{font-size:13px;color:var(--text3);margin-top:5px;font-weight:500;}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow);}
+.stat-card.blue{border-left:4px solid var(--accent);background:linear-gradient(135deg,var(--accent-light),white);}
+.stat-card.green{border-left:4px solid var(--green);background:linear-gradient(135deg,var(--green-light),white);}
+.stat-card.orange{border-left:4px solid var(--orange);background:linear-gradient(135deg,var(--orange-light),white);}
+.stat-card.red{border-left:4px solid var(--red);background:linear-gradient(135deg,var(--red-light),white);}
+.stat-card.purple{border-left:4px solid var(--purple);background:linear-gradient(135deg,var(--purple-light),white);}
+.alert{padding:14px 18px;border-radius:12px;font-size:14px;font-weight:500;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
+.a-red{background:var(--red-light);border:1.5px solid #fca5a5;color:#991b1b;}
+.a-orange{background:var(--orange-light);border:1.5px solid #fdba74;color:#9a3412;}
+.a-blue{background:var(--accent-light);border:1.5px solid #93c5fd;color:#1e40af;}
+.a-green{background:var(--green-light);border:1.5px solid #86efac;color:#15803d;}
+.block-banner{background:linear-gradient(135deg,#fef2f2,#fff);border:2px solid var(--red);border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 4px 20px rgba(220,38,38,.15);}
+.block-banner-title{font-size:18px;font-weight:800;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.block-banner-sub{font-size:14px;color:#7f1d1d;font-weight:500;line-height:1.5;}
+.form-group{margin-bottom:14px;}
+label{display:block;font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+input,select,textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:all .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+.form-row{display:grid;grid-template-columns:1fr 80px 90px 36px;gap:8px;align-items:end;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;transition:all .2s;white-space:nowrap;}
+.btn-blue{background:var(--accent);color:white;box-shadow:0 4px 12px rgba(59,130,246,.3);}
+.btn-blue:hover{background:#2563eb;transform:translateY(-1px);}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:#15803d;}
+.btn-red{background:var(--red);color:white;}
+.btn-gray{background:var(--bg);color:var(--text2);border:1.5px solid var(--border2);}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:8px;}
+.btn-full{width:100%;justify-content:center;}
+.badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.badge-green{background:var(--green-light);color:var(--green);border:1px solid #86efac;}
+.badge-red{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;}
+.badge-orange{background:var(--orange-light);color:var(--orange);border:1px solid #fdba74;}
+.badge-blue{background:var(--accent-light);color:var(--accent);border:1px solid #93c5fd;}
+.badge-yellow{background:var(--yellow-light);color:var(--yellow);border:1px solid #fde047;}
+.badge-purple{background:var(--purple-light);color:var(--purple);border:1px solid #c4b5fd;}
+.badge-gray{background:var(--bg);color:var(--text3);border:1px solid var(--border2);}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1.5px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--bg);}
+th{text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:13px 16px;border-bottom:1.5px solid var(--border);}
+td{padding:14px 16px;font-size:14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfc;}
+.progress{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:8px;border:1px solid var(--border);}
+.progress-fill{height:100%;border-radius:4px;transition:width .5s;}
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.file-drop{border:2px dashed var(--border2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+.file-drop:hover,.file-drop.drag{border-color:var(--accent);background:var(--accent-light);}
+.file-drop-icon{font-size:28px;margin-bottom:8px;}
+.file-drop-text{font-size:14px;color:var(--text3);font-weight:500;}
+.file-drop-text span{color:var(--accent);font-weight:700;}
+.file-list{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+.file-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 13px;}
+.file-item-name{flex:1;font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.file-item-size{font-size:12px;color:var(--text4);}
+.file-item-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px;}
+.day-block{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;}
+.day-block.worked{border-color:var(--green);background:var(--green-light);}
+.day-block.partial{border-color:var(--orange);background:var(--orange-light);}
+.day-name{color:var(--text4);font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:4px;}
+.day-hrs{font-size:15px;font-weight:800;}
+.tabs{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px;border:1.5px solid var(--border);}
+.tab-btn{flex:1;padding:10px 16px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border-radius:9px;transition:all .2s;}
+.tab-btn.active{background:var(--surface);color:var(--accent);box-shadow:var(--shadow);}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.po-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);margin-bottom:8px;}
+.inv-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+.inv-card.overdue{border-color:var(--red);background:var(--red-light);}
+.inv-card.unpaid{border-color:var(--orange);}
+/* CLOVER SECTION */
+.clover-card{background:linear-gradient(135deg,#f0fdf4,#fff);border:2px solid #86efac;border-radius:16px;padding:22px;margin-bottom:20px;}
+.clover-title{font-size:18px;font-weight:800;color:var(--green);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+#fmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center;}
+.modal-box{background:var(--surface);border-radius:18px;padding:24px;max-width:90vw;max-height:85vh;overflow:auto;min-width:340px;box-shadow:var(--shadow-lg);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-size:18px;font-weight:800;}
+#toast{position:fixed;bottom:24px;right:24px;min-width:260px;max-width:340px;background:var(--surface);border-radius:14px;padding:14px 18px;font-size:14px;font-weight:600;transform:translateY(120px);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-lg);border:1.5px solid var(--border);}
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="lang-en">
+
+<!-- LOADING -->
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div style="font-size:16px;font-weight:700;color:var(--text2);">Connecting to database...</div>
+</div>
+
+<div id="app" style="display:none;">
+<header>
+  <div class="logo">
+    <div class="logo-icon">💨</div>
+    <div>
+      <div class="logo-name">Space Out Smoke & Vape</div>
+      <div class="logo-sub">Blanchard, OK — Cloud Manager System</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-indicator" id="sync-indicator">
+      <div class="sync-dot"></div>
+      <span id="sync-text">Connected</span>
+    </div>
+    <div id="live-time" style="font-size:13px;color:var(--text3);font-weight:600;"></div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('ar')">AR</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showPanel('dashboard',this)">📊 <span class="en-t">Dashboard</span><span class="ar-t ar-font">الرئيسية</span></button>
+  <button class="nav-btn" onclick="showPanel('attendance',this)">🕐 <span class="en-t">Attendance</span><span class="ar-t ar-font">الحضور</span></button>
+  <button class="nav-btn" onclick="showPanel('sales',this)">💰 <span class="en-t">Sales & Profit</span><span class="ar-t ar-font">المبيعات</span></button>
+  <button class="nav-btn" onclick="showPanel('expenses',this)">🧾 <span class="en-t">Expenses</span><span class="ar-t ar-font">المصاريف</span></button>
+  <button class="nav-btn" onclick="showPanel('purchases',this)">📦 <span class="en-t">Purchases & Invoices</span><span class="ar-t ar-font">المشتريات</span></button>
+  <button class="nav-btn" onclick="showPanel('closing',this)">🔐 <span class="en-t">Month Closing</span><span class="ar-t ar-font">إغلاق الشهر</span></button>
+  <button class="nav-btn" onclick="showPanel('performance',this)">⭐ <span class="en-t">Performance</span><span class="ar-t ar-font">الأداء</span></button>
+  <button class="nav-btn" onclick="showPanel('payments',this)">💳 <span class="en-t">Payments</span><span class="ar-t ar-font">المدفوعات</span></button>
+  <button class="nav-btn" onclick="showPanel('clover',this)">🍀 Clover</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+
+<div id="panel-dashboard" class="panel active">
+  <div class="page-title">📊 <span class="en-t">Dashboard</span><span class="ar-t ar-font">لوحة التحكم</span></div>
+  <div class="page-sub en-t">Live data synced across all devices — Space Out Smoke & Vape, Blanchard OK</div>
+  <div class="page-sub ar-t ar-font">بيانات مباشرة مزامنة على جميع الأجهزة</div>
+
+  <div id="dash-block" style="display:none;" class="block-banner">
+    <div class="block-banner-title">🚫 Month Closing Blocked / إغلاق الشهر محظور</div>
+    <div class="block-banner-sub" id="dash-block-reason"></div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px;">
+    <div class="stat-card blue">
+      <div class="card-title en-t">Hours This Week</div><div class="card-title ar-t ar-font">ساعات الأسبوع</div>
+      <div class="stat-num" id="d-hours">—</div>
+      <div class="stat-sub en-t">of 30 required</div><div class="stat-sub ar-t ar-font">من 30 مطلوبة</div>
+      <div class="progress"><div class="progress-fill" id="d-hrs-bar" style="width:0%;background:var(--accent);"></div></div>
+    </div>
+    <div class="stat-card green">
+      <div class="card-title en-t">Today's Sales</div><div class="card-title ar-t ar-font">مبيعات اليوم</div>
+      <div class="stat-num" id="d-today-sales" style="color:var(--green);">—</div>
+      <div class="stat-sub en-t">gross revenue</div><div class="stat-sub ar-t ar-font">إجمالي المبيعات</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="card-title en-t">Monthly Net Profit</div><div class="card-title ar-t ar-font">صافي ربح الشهر</div>
+      <div class="stat-num" id="d-profit" style="color:var(--orange);">—</div>
+      <div class="stat-sub en-t">after all expenses</div><div class="stat-sub ar-t ar-font">بعد المصاريف</div>
+    </div>
+    <div class="stat-card red">
+      <div class="card-title en-t">Unpaid Invoices</div><div class="card-title ar-t ar-font">فواتير غير مدفوعة</div>
+      <div class="stat-num" id="d-unpaid" style="color:var(--red);">—</div>
+      <div class="stat-sub en-t">⚠️ blocks month closing</div><div class="stat-sub ar-t ar-font">⚠️ يمنع إغلاق الشهر</div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-title en-t">This Week Attendance</div><div class="card-title ar-t ar-font">حضور هذا الأسبوع</div>
+      <div class="week-grid" id="week-dash"></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:700;color:var(--text2);" class="en-t">This week rate:</span>
+        <span style="font-size:15px;font-weight:700;color:var(--text2);" class="ar-t ar-font">معدل الأسبوع:</span>
+        <div id="d-week-rate"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title en-t">Today's Breakdown</div><div class="card-title ar-t ar-font">ملخص اليوم</div>
+      <div id="today-breakdown" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="text-align:center;color:var(--text4);padding:20px;font-size:14px;">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g3" style="margin-top:16px;">
+    <div class="stat-card purple">
+      <div class="card-title en-t">Month Expenses</div><div class="card-title ar-t ar-font">مصاريف الشهر</div>
+      <div class="stat-num" id="d-exp" style="color:var(--purple);">—</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="card-title en-t">Month Sales Total</div><div class="card-title ar-t ar-font">مجموع مبيعات الشهر</div>
+      <div class="stat-num" id="d-month-sales" style="color:var(--accent);">—</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--yellow);background:linear-gradient(135deg,var(--yellow-light),white);">
+      <div class="card-title en-t">Overdue Invoices</div><div class="card-title ar-t ar-font">فواتير متأخرة</div>
+      <div class="stat-num" id="d-overdue" style="color:var(--yellow);">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ATTENDANCE -->
+
+<div id="panel-attendance" class="panel">
+  <div class="page-title">🕐 <span class="en-t">Attendance</span><span class="ar-t ar-font">الحضور والساعات</span></div>
+  <div class="page-sub en-t">30+ hrs/week = $800 flat | Under 30 hrs = $20/hr — Synced with all devices</div>
+  <div class="page-sub ar-t ar-font">30+ ساعة = 800$ ثابت | أقل = 20$/ساعة — مزامن مع جميع الأجهزة</div>
+
+  <div class="alert a-blue">
+    <span>ℹ️</span>
+    <span><span class="en-t">When Clover is configured, attendance syncs automatically from Clover Time Clock. Manual entry is still available.</span>
+    <span class="ar-t ar-font">عند ربط Clover، يتزامن الحضور تلقائياً. الإدخال اليدوي متاح دائماً.</span></span>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;"><span class="en-t">Log Attendance</span><span class="ar-t ar-font">تسجيل الحضور</span></div>
+      <div class="form-group"><label><span class="en-t">Employee Name</span><span class="ar-t ar-font">اسم الموظف</span></label><input type="text" id="att-name" value="Manager" placeholder="Name..."></div>
+      <div class="form-group"><label><span class="en-t">Date</span><span class="ar-t ar-font">التاريخ</span></label><input type="date" id="att-date"></div>
+      <div class="form-group"><label><span class="en-t">Check In</span><span class="ar-t ar-font">وقت الدخول</span></label><input type="time" id="att-in"></div>
+      <div class="form-group"><label><span class="en-t">Check Out</span><span class="ar-t ar-font">وقت الخروج</span></label><input type="time" id="att-out"></div>
+      <div class="form-group"><label><span class="en-t">Notes</span><span class="ar-t ar-font">ملاحظات</span></label><input type="text" id="att-notes" placeholder="Optional..."></div>
+      <button class="btn btn-blue btn-full" onclick="saveAtt()">✅ <span class="en-t">Save Attendance</span><span class="ar-t ar-font">حفظ الحضور</span></button>
+    </div>
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:12px;"><span class="en-t">This Week</span><span class="ar-t ar-font">هذا الأسبوع</span></div>
+      <div class="week-grid" id="week-att"></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:700;margin-bottom:4px;">TOTAL HOURS</div>
+          <div style="font-size:42px;font-weight:800;" id="att-total">—</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="att-rate-badge" style="margin-bottom:6px;"></div>
+          <div style="font-size:13px;color:var(--text3);" id="att-rate-note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:800;"><span class="en-t">Attendance Log</span><span class="ar-t ar-font">سجل الحضور</span></div>
+      <button class="btn btn-gray btn-sm" onclick="loadAtt()">🔄 Refresh</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Employee</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Source</th><th>Notes</th><th></th>
+        </tr></thead>
+        <tbody id="att-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text4);padding:24px;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SALES -->
+
+<div id="panel-sales" class="panel">
+  <div class="page-title">💰 <span class="en-t">Sales & Net Profit</span><span class="ar-t ar-font">المبيعات وصافي الربح</span></div>
+  <div class="page-sub en-t">Daily sales from Clover + monthly net profit tracking</div>
+  <div class="page-sub ar-t ar-font">المبيعات اليومية من Clover + تتبع صافي الربح الشهري</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('sales','tab-daily',this)">📅 <span class="en-t">Daily Sales</span><span class="ar-t ar-font">المبيعات اليومية</span></button>
+    <button class="tab-btn" onclick="showTab('sales','tab-monthly',this)">📊 <span class="en-t">Monthly Summary</span><span class="ar-t ar-font">الملخص الشهري</span></button>
+  </div>
+
+  <div id="tab-daily" class="tab-content active">
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:16px;"><span class="en-t">Add Daily Sales</span><span class="ar-t ar-font">إدخال مبيعات يومية</span></div>
+        <div class="alert a-green"><span>🍀</span><span class="en-t">When Clover is connected, daily sales sync automatically. Manual entry is a backup.</span><span class="ar-t ar-font">عند ربط Clover، تتزامن المبيعات تلقائياً. الإدخال اليدوي احتياطي.</span></div>
+        <div class="form-group"><label>Date / التاريخ</label><input type="date" id="sale-date"></div>
+        <div class="form-group"><label><span class="en-t">Gross Sales ($)</span><span class="ar-t ar-font">إجمالي المبيعات ($)</span></label><input type="number" id="sale-gross" placeholder="0.00"></div>
+        <div class="form-group"><label><span class="en-t">Net Sales ($)</span><span class="ar-t ar-font">صافي المبيعات ($)</span></label><input type="number" id="sale-net" placeholder="0.00"></div>
+        <div class="form-group"><label><span class="en-t">Transactions #</span><span class="ar-t ar-font">عدد المعاملات</span></label><input type="number" id="sale-trans" placeholder="0"></div>
+        <button class="btn btn-green btn-full" onclick="saveSale()">💾 <span class="en-t">Save</span><span class="ar-t ar-font">حفظ</span></button>
+      </div>
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:14px;"><span class="en-t">Recent Daily Sales</span><span class="ar-t ar-font">آخر المبيعات اليومية</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Gross</th><th>Net</th><th>Trans.</th><th>Source</th><th></th></tr></thead>
+            <tbody id="sales-tbody"><tr><td colspan="6" style="text-align:center;color:var(--text4);padding:24px;">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-monthly" class="tab-content">
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:16px;"><span class="en-t">Monthly Net Profit</span><span class="ar-t ar-font">صافي الربح الشهري</span></div>
+        <div class="form-group"><label>Month / الشهر</label><input type="month" id="fin-month"></div>
+        <div class="form-group"><label><span class="en-t">Total Revenue ($)</span><span class="ar-t ar-font">إجمالي الإيرادات ($)</span></label><input type="number" id="fin-rev" placeholder="0.00" oninput="calcP()"></div>
+        <div class="form-group"><label><span class="en-t">Total Expenses ($)</span><span class="ar-t ar-font">إجمالي المصاريف ($)</span></label><input type="number" id="fin-exp" placeholder="0.00" oninput="calcP()"></div>
+        <div class="form-group"><label>Notes</label><textarea id="fin-notes" rows="2" placeholder="Remarks..."></textarea></div>
+        <div style="background:var(--green-light);border:2px solid #86efac;border-radius:14px;padding:18px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">NET PROFIT / صافي الربح</div>
+          <div style="font-size:40px;font-weight:800;color:var(--green);" id="fin-net">$0.00</div>
+        </div>
+        <button class="btn btn-green btn-full" onclick="saveFin()">💾 Save Record</button>
+      </div>
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:14px;">Monthly Records</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net Profit</th><th></th></tr></thead>
+            <tbody id="fin-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px;">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSES -->
+
+<div id="panel-expenses" class="panel">
+  <div class="page-title">🧾 <span class="en-t">Expenses & Receipts</span><span class="ar-t ar-font">المصاريف والفواتير المؤيدة</span></div>
+  <div class="alert a-orange"><span>⚠️</span><span><b>Section 1:</b> Any expense over $500 must be disclosed to Manager in writing before deducting from Net Profit.</span></div>
+  <div class="grid g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;">Add Expense</div>
+      <div class="form-group"><label>Date</label><input type="date" id="exp-date"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="exp-cat">
+          <option value="Rent">🏠 Rent</option><option value="Utilities">💡 Utilities</option>
+          <option value="Payroll">👥 Payroll</option><option value="Inventory">📦 Inventory</option>
+          <option value="Taxes">🏛️ Taxes</option><option value="Marketing">📢 Marketing</option>
+          <option value="Maintenance">🔧 Maintenance</option><option value="Insurance">🛡️ Insurance</option>
+          <option value="Supplies">🖊️ Supplies</option><option value="Other">📌 Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Description</label><input type="text" id="exp-desc" placeholder="What was this for?"></div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" id="exp-amount" placeholder="0.00"></div>
+      <div class="form-group"><label>Paid By</label>
+        <select id="exp-paid"><option value="Owner">Owner</option><option value="Manager">Manager</option><option value="Business">Business Account</option></select>
+      </div>
+      <div class="form-group">
+        <label>📎 Attach Receipt</label>
+        <div class="file-drop" id="exp-drop" onclick="document.getElementById('exp-finp').click()" ondragover="dOver(event,'exp-drop')" ondragleave="dLeave('exp-drop')" ondrop="dDrop(event,'exp')">
+          <div class="file-drop-icon">📎</div>
+          <div class="file-drop-text"><span class="en-t">Drag & drop or <span>click to browse</span></span><span class="ar-t ar-font">اسحب أو <span>انقر للتصفح</span></span></div>
+          <input type="file" id="exp-finp" style="display:none" accept="image/*,.pdf" multiple onchange="fSel(event,'exp')">
+        </div>
+        <div class="file-list" id="exp-flist"></div>
+      </div>
+      <button class="btn btn-blue btn-full" onclick="saveExp()">💾 Save Expense</button>
+    </div>
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:14px;">Summary</div>
+      <div id="exp-cat-sum"></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:12px;color:var(--text3);font-weight:700;">TOTAL</div><div style="font-size:36px;font-weight:800;color:var(--purple);" id="exp-total">$0</div></div>
+        <div id="exp-warn"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:800;">All Expenses</div>
+      <button class="btn btn-gray btn-sm" onclick="loadExp()">🔄 Refresh</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Paid By</th><th>Receipt</th><th>Alert</th><th></th></tr></thead>
+        <tbody id="exp-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text4);padding:24px;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PURCHASES -->
+
+<div id="panel-purchases" class="panel">
+  <div class="page-title">📦 <span class="en-t">Purchases & Invoices</span><span class="ar-t ar-font">المشتريات والفواتير</span></div>
+  <div class="alert a-red"><span>🚫</span><span><b>Rule:</b> All invoices & purchase orders MUST be paid before end of month. Unpaid items block month closing.</span></div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('purchases','tab-po',this)">📋 Purchase Orders</button>
+    <button class="tab-btn" onclick="showTab('purchases','tab-inv',this)">🧾 Invoices</button>
+  </div>
+
+  <div id="tab-po" class="tab-content active">
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:16px;">New Purchase Order</div>
+        <div class="form-group"><label>Supplier</label><input type="text" id="po-sup" placeholder="Supplier name..."></div>
+        <div class="form-group"><label>Order Date</label><input type="date" id="po-date"></div>
+        <div class="form-group"><label>Due / Delivery Date</label><input type="date" id="po-due"></div>
+        <div class="form-group"><label>Category</label>
+          <select id="po-cat"><option value="Vape Products">💨 Vape Products</option><option value="Smoke Products">🚬 Smoke Products</option><option value="Accessories">🔌 Accessories</option><option value="CBD/Hemp">🌿 CBD/Hemp</option><option value="Packaging">📦 Packaging</option><option value="Store Supplies">🏪 Store Supplies</option><option value="Other">📌 Other</option></select>
+        </div>
+        <div class="form-group">
+          <label>Items</label>
+          <div id="po-items"></div>
+          <div class="form-row">
+            <input type="text" id="pi-n" placeholder="Item..."><input type="number" id="pi-q" placeholder="Qty"><input type="number" id="pi-p" placeholder="Price" step="0.01"><button class="btn btn-green" style="padding:10px;height:44px;" onclick="addPI()">+</button>
+          </div>
+        </div>
+        <div style="background:var(--green-light);border:1.5px solid #86efac;border-radius:12px;padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;">
+          <span style="font-size:15px;font-weight:700;">Order Total</span>
+          <span style="font-size:26px;font-weight:800;color:var(--green);" id="po-total">$0.00</span>
+        </div>
+        <div class="form-group"><label>Payment Status</label>
+          <select id="po-pay-status"><option value="Unpaid">❌ Unpaid</option><option value="Paid">✅ Paid</option></select>
+        </div>
+        <div class="form-group"><label>Order Status</label>
+          <select id="po-status"><option value="Pending">⏳ Pending</option><option value="Ordered">📤 Ordered</option><option value="Received">✅ Received</option><option value="Partial">🔄 Partial</option></select>
+        </div>
+        <div class="form-group">
+          <label>📎 Attach Invoice</label>
+          <div class="file-drop" id="po-drop" onclick="document.getElementById('po-finp').click()" ondragover="dOver(event,'po-drop')" ondragleave="dLeave('po-drop')" ondrop="dDrop(event,'po')">
+            <div class="file-drop-icon">🧾</div>
+            <div class="file-drop-text"><span>Attach supplier invoice — <span>click</span></span></div>
+            <input type="file" id="po-finp" style="display:none" accept="image/*,.pdf" multiple onchange="fSel(event,'po')">
+          </div>
+          <div class="file-list" id="po-flist"></div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea id="po-notes" rows="2" placeholder="Notes..."></textarea></div>
+        <button class="btn btn-blue btn-full" onclick="savePO()">💾 Save Purchase Order</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-size:17px;font-weight:800;">Purchase Orders</div>
+          <button class="btn btn-gray btn-sm" onclick="loadPO()">🔄 Refresh</button>
+        </div>
+        <div id="po-list" style="display:flex;flex-direction:column;gap:12px;max-height:600px;overflow-y:auto;"><div style="text-align:center;color:var(--text4);padding:32px;">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-inv" class="tab-content">
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-size:17px;font-weight:800;margin-bottom:16px;">Add Invoice</div>
+        <div class="form-group"><label>Invoice #</label><input type="text" id="inv-num" placeholder="INV-0001"></div>
+        <div class="form-group"><label>Vendor</label><input type="text" id="inv-vendor" placeholder="Vendor name..."></div>
+        <div class="form-group"><label>Invoice Date</label><input type="date" id="inv-date"></div>
+        <div class="form-group"><label>Due Date (pay by end of month)</label><input type="date" id="inv-due"></div>
+        <div class="form-group"><label>Amount ($)</label><input type="number" id="inv-amount" placeholder="0.00"></div>
+        <div class="form-group"><label>Status</label>
+          <select id="inv-status"><option value="Unpaid">❌ Unpaid</option><option value="Paid">✅ Paid</option><option value="Partial">🔄 Partial</option></select>
+        </div>
+        <div class="form-group">
+          <label>📄 Attach Invoice File</label>
+          <div class="file-drop" id="inv-drop" onclick="document.getElementById('inv-finp').click()" ondragover="dOver(event,'inv-drop')" ondragleave="dLeave('inv-drop')" ondrop="dDrop(event,'inv')">
+            <div class="file-drop-icon">📄</div>
+            <div class="file-drop-text"><span>Upload PDF or image — <span>click here</span></span></div>
+            <input type="file" id="inv-finp" style="display:none" accept="image/*,.pdf" multiple onchange="fSel(event,'inv')">
+          </div>
+          <div class="file-list" id="inv-flist"></div>
+        </div>
+        <button class="btn btn-blue btn-full" onclick="saveInv()">💾 Save Invoice</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-size:17px;font-weight:800;">All Invoices</div>
+          <button class="btn btn-gray btn-sm" onclick="loadInv()">🔄 Refresh</button>
+        </div>
+        <div id="inv-list" style="display:flex;flex-direction:column;gap:12px;max-height:600px;overflow-y:auto;"><div style="text-align:center;color:var(--text4);padding:32px;">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSING -->
+
+<div id="panel-closing" class="panel">
+  <div class="page-title">🔐 Month Closing</div>
+  <div class="page-sub">All invoices and purchase orders must be paid to close the month</div>
+  <div id="closing-content"><div style="text-align:center;color:var(--text4);padding:40px;">Loading...</div></div>
+</div>
+
+<!-- PERFORMANCE -->
+
+<div id="panel-performance" class="panel">
+  <div class="page-title">⭐ Performance Reviews</div>
+  <div class="page-sub">Section 5B-1 — Quarterly reviews every 3 months</div>
+  <div class="grid g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;">New Review</div>
+      <div class="form-group"><label>Date</label><input type="date" id="perf-date"></div>
+      <div class="form-group"><label>Period</label><select id="perf-period"><option>Q1 (Jan–Mar)</option><option>Q2 (Apr–Jun)</option><option>Q3 (Jul–Sep)</option><option>Q4 (Oct–Dec)</option></select></div>
+      <div id="perf-criteria" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>
+      <div style="background:var(--accent-light);border:2px solid #93c5fd;border-radius:14px;padding:16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:12px;color:var(--text3);font-weight:700;margin-bottom:4px;">SCORE</div><div style="font-size:36px;font-weight:800;" id="perf-score">0/50</div></div>
+        <div id="perf-grade"></div>
+      </div>
+      <div class="form-group"><label>Comments</label><textarea id="perf-notes" rows="3" placeholder="Comments..."></textarea></div>
+      <button class="btn btn-blue btn-full" onclick="saveReview()">💾 Save Review</button>
+    </div>
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:14px;">Review History</div>
+      <div id="perf-history" style="display:flex;flex-direction:column;gap:12px;max-height:520px;overflow-y:auto;"><div style="text-align:center;color:var(--text4);padding:32px;">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENTS -->
+
+<div id="panel-payments" class="panel">
+  <div class="page-title">💳 Payments & Compensation</div>
+  <div class="alert a-blue"><span>ℹ️</span><span>Profit share is agreed between Owner and Manager separately. This tracks base pay only.</span></div>
+  <div class="grid g3" style="margin-bottom:16px;">
+    <div class="stat-card blue"><div class="card-title">Weekly Base</div><div class="stat-num" style="color:var(--accent);">$800</div><div class="stat-sub">30+ hrs/week</div></div>
+    <div class="stat-card green"><div class="card-title">Total Paid</div><div class="stat-num" id="pay-total" style="color:var(--green);">—</div></div>
+    <div class="stat-card orange"><div class="card-title">Hourly Rate</div><div class="stat-num" style="color:var(--orange);">$20/hr</div><div class="stat-sub">under 30 hrs/week</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;">Record Payment</div>
+      <div class="form-group"><label>Date</label><input type="date" id="pay-date"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="pay-type"><option value="Weekly Base">💵 Weekly Base ($800)</option><option value="Hourly">⏱️ Hourly ($20/hr)</option><option value="Bonus">🎁 Bonus</option><option value="Advance">⚡ Advance</option><option value="Other">📌 Other</option></select>
+      </div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" id="pay-amount" placeholder="0.00"></div>
+      <div class="form-group"><label>Method</label>
+        <select id="pay-method"><option value="Cash">💵 Cash</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Check">📝 Check</option><option value="Zelle">📱 Zelle</option><option value="Venmo">📱 Venmo</option></select>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="pay-notes" placeholder="Reference..."></div>
+      <button class="btn btn-green btn-full" onclick="savePay()">✅ Record Payment</button>
+    </div>
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:14px;">Payment History</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Method</th><th></th></tr></thead>
+          <tbody id="pay-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLOVER -->
+
+<div id="panel-clover" class="panel">
+  <div class="page-title">🍀 Clover Integration</div>
+  <div class="page-sub">Connect your Clover POS to auto-sync sales and employee hours</div>
+
+  <div class="clover-card">
+    <div class="clover-title">🍀 Clover POS Connection</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Enter your Clover credentials to automatically sync daily sales and employee time clock data. This is a one-time setup.</div>
+    <div class="form-group"><label>Merchant ID</label><input type="text" id="clover-mid" placeholder="Your Clover Merchant ID..." value=""></div>
+    <div class="form-group"><label>API Token</label><input type="password" id="clover-token" placeholder="Your Clover API Token..."></div>
+    <div class="form-group"><label>Environment</label>
+      <select id="clover-env"><option value="https://api.clover.com">Production (Live)</option><option value="https://sandbox.dev.clover.com">Sandbox (Testing)</option></select>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-green" onclick="saveCloverCreds()">💾 Save & Connect</button>
+      <button class="btn btn-blue" onclick="syncCloverNow()">🔄 Sync Now</button>
+      <button class="btn btn-gray" onclick="testClover()">🧪 Test Connection</button>
+    </div>
+    <div id="clover-status" style="margin-top:14px;font-size:14px;font-weight:600;"></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:14px;">📅 Auto-Sync Schedule</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);">
+          <div><div style="font-weight:700;font-size:14px;">Daily Sales</div><div style="font-size:12px;color:var(--text3);">Syncs every day at midnight</div></div>
+          <span class="badge badge-green">AUTO</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);">
+          <div><div style="font-weight:700;font-size:14px;">Employee Time Clock</div><div style="font-size:12px;color:var(--text3);">Syncs check-ins and check-outs</div></div>
+          <span class="badge badge-green">AUTO</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border);">
+          <div><div style="font-weight:700;font-size:14px;">Last Sync</div><div style="font-size:12px;color:var(--text3);" id="last-sync-time">Never</div></div>
+          <button class="btn btn-gray btn-sm" onclick="syncCloverNow()">Sync Now</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:17px;font-weight:800;margin-bottom:14px;">🔧 How to Get Clover Credentials</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--text2);line-height:1.6;">
+        <div style="padding:10px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">
+          <b>Step 1:</b> Go to <b>dashboard.clover.com</b>
+        </div>
+        <div style="padding:10px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">
+          <b>Step 2:</b> Account & Setup → API Tokens → Create Token
+        </div>
+        <div style="padding:10px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">
+          <b>Step 3:</b> Settings → Find your Merchant ID
+        </div>
+        <div style="padding:10px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--green);">
+          <b>Step 4:</b> Paste both here and click Save & Connect ✅
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div id="toast"></div>
+<div id="fmodal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" id="modal-title">Files</div><button class="btn btn-gray btn-sm" onclick="closeModal()">✕ Close</button></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE INIT
+// ═══════════════════════════════════════
+const SUPA_URL = 'https://smtfcaadrxggdjizibnn.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdGZjYWFkcnhnZ2RqaXppYm5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDg0NTIsImV4cCI6MjA5NDQ4NDQ1Mn0.FepEbCVdrflNPF1-OxdRkINBpK286U_UV6iTeOMOtKI';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+// LOCAL TEMP FILES
+let expFiles=[], poFiles=[], invFiles=[];
+let poItemsList=[], poRunTotal=0;
+
+// ═══ SYNC INDICATOR ═══
+function setSyncStatus(status, text) {
+  const el = document.getElementById('sync-indicator');
+  const t = document.getElementById('sync-text');
+  el.className = `sync-indicator ${status}`;
+  t.textContent = text;
+}
+
+// ═══ LANG ═══
+function setLang(l){document.body.className=l==='ar'?'lang-ar':'lang-en';document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===l.toUpperCase()));}
+
+// ═══ PANELS ═══
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='closing')renderClosing();
+  if(id==='dashboard')loadDash();
+  if(id==='attendance'){loadAtt();buildWeek('week-att');}
+  if(id==='sales'){loadSales();loadFin();}
+  if(id==='expenses')loadExp();
+  if(id==='purchases'){loadPO();loadInv();}
+  if(id==='performance')loadReviews();
+  if(id==='payments')loadPay();
+}
+function showTab(panel,tab,btn){
+  document.querySelectorAll(`#panel-${panel} .tab-content`).forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll(`#panel-${panel} .tab-btn`).forEach(b=>b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ═══ TIME ═══
+setInterval(()=>{document.getElementById('live-time').textContent=new Date().toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});},1000);
+
+// ═══ TOAST ═══
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  const ic={success:'✅',error:'❌',warn:'⚠️',info:'ℹ️'};
+  el.innerHTML=ic[type]+' '+msg;
+  el.style.borderColor=type==='error'?'#fca5a5':type==='warn'?'#fdba74':'#86efac';
+  el.style.transform='translateY(0)';
+  setTimeout(()=>el.style.transform='translateY(120px)',3200);
+}
+
+// ═══ WEEK GRID ═══
+async function buildWeek(id) {
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const today=new Date(), sow=new Date(today); sow.setDate(today.getDate()-today.getDay());
+  const eow=new Date(sow); eow.setDate(sow.getDate()+6);
+  const sowStr=sow.toISOString().split('T')[0], eowStr=eow.toISOString().split('T')[0];
+  const {data}=await db.from('attendance').select('*').gte('date',sowStr).lte('date',eowStr);
+  const el=document.getElementById(id); if(!el)return;
+  el.innerHTML='';
+  let weekTotal=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(sow); d.setDate(sow.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    const recs=data?data.filter(a=>a.date===ds):[];
+    const hrs=recs.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
+    weekTotal+=hrs;
+    const cls=hrs>=6?'worked':hrs>0?'partial':'';
+    el.innerHTML+=`<div class="day-block ${cls}"><div class="day-name">${days[i]}</div><div class="day-hrs" style="color:${hrs>=6?'var(--green)':hrs>0?'var(--orange)':'var(--text4)'}">${hrs>0?hrs.toFixed(1):'—'}</div></div>`;
+  }
+  // Update week totals
+  const tEl=document.getElementById('att-total'); if(tEl)tEl.textContent=weekTotal.toFixed(1);
+  const badge=document.getElementById('att-rate-badge');
+  const note=document.getElementById('att-rate-note');
+  const dashBadge=document.getElementById('d-week-rate');
+  const txt=weekTotal>=30?'$800 FLAT RATE':`$${(weekTotal*20).toFixed(0)} @ $20/hr`;
+  const cls2=weekTotal>=30?'badge-green':'badge-orange';
+  if(badge)badge.innerHTML=`<span class="badge ${cls2}" style="font-size:13px">${txt}</span>`;
+  if(note)note.textContent=weekTotal>=30?'✅ Regular week':'⚠️ Reduced week';
+  if(dashBadge)dashBadge.innerHTML=`<span class="badge ${cls2}" style="font-size:13px">${txt}</span>`;
+  const dhEl=document.getElementById('d-hours');
+  if(dhEl)dhEl.textContent=weekTotal.toFixed(1);
+  const hBar=document.getElementById('d-hrs-bar');
+  if(hBar){hBar.style.width=Math.min(100,(weekTotal/30)*100)+'%';hBar.style.background=weekTotal>=30?'var(--green)':'var(--accent)';}
+  return weekTotal;
+}
+
+// ═══ ATTENDANCE ═══
+async function saveAtt(){
+  const name=document.getElementById('att-name').value||'Manager';
+  const date=document.getElementById('att-date').value;
+  const cin=document.getElementById('att-in').value;
+  const cout=document.getElementById('att-out').value;
+  const notes=document.getElementById('att-notes').value;
+  if(!date||!cin){toast('Fill date and check-in time','error');return;}
+  const hours=cout?((t2m(cout)-t2m(cin))/60):null;
+  if(hours!==null&&hours<=0){toast('Check-out must be after check-in','error');return;}
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('attendance').insert({employee_name:name,date,check_in:cin,check_out:cout||null,hours,notes,source:'manual'});
+  if(error){toast('Error saving: '+error.message,'error');setSyncStatus('error','Error');}
+  else{toast('Attendance saved!');setSyncStatus('','Connected');loadAtt();buildWeek('week-att');buildWeek('week-dash');loadDash();}
+  document.getElementById('att-in').value=document.getElementById('att-out').value=document.getElementById('att-notes').value='';
+}
+
+async function loadAtt(){
+  const {data,error}=await db.from('attendance').select('*').order('date',{ascending:false}).limit(50);
+  const tbody=document.getElementById('att-tbody');
+  if(error||!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text4);padding:24px;">No records yet</td></tr>';return;}
+  tbody.innerHTML=data.map(a=>`<tr><td style="font-weight:700">${a.employee_name}</td><td>${a.date}</td><td>${a.check_in||'—'}</td><td>${a.check_out||'—'}</td><td style="font-weight:800;color:${a.hours>=6?'var(--green)':'var(--orange)'};font-size:16px">${a.hours?a.hours.toFixed(1)+'h':'—'}</td><td><span class="badge ${a.source==='clover'?'badge-green':'badge-gray'}">${a.source}</span></td><td style="color:var(--text3)">${a.notes||'—'}</td><td><button class="btn btn-red btn-sm" onclick="delAtt(${a.id})">✕</button></td></tr>`).join('');
+}
+
+async function delAtt(id){await db.from('attendance').delete().eq('id',id);loadAtt();buildWeek('week-att');}
+function t2m(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+
+// ═══ DAILY SALES ═══
+async function saveSale(){
+  const date=document.getElementById('sale-date').value;
+  const gross=parseFloat(document.getElementById('sale-gross').value)||0;
+  const net=parseFloat(document.getElementById('sale-net').value)||0;
+  const trans=parseInt(document.getElementById('sale-trans').value)||0;
+  if(!date||!gross){toast('Fill date and gross sales','error');return;}
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('daily_sales').upsert({date,gross_sales:gross,net_sales:net,transactions:trans,source:'manual'},{onConflict:'date'});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{toast('Sales saved!');setSyncStatus('','Connected');loadSales();loadDash();}
+  document.getElementById('sale-gross').value=document.getElementById('sale-net').value=document.getElementById('sale-trans').value='';
+}
+
+async function loadSales(){
+  const {data}=await db.from('daily_sales').select('*').order('date',{ascending:false}).limit(30);
+  const tbody=document.getElementById('sales-tbody');
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text4);padding:24px;">No sales records</td></tr>';return;}
+  tbody.innerHTML=data.map(s=>`<tr><td style="font-weight:700">${s.date}</td><td style="color:var(--green);font-weight:800">$${s.gross_sales.toFixed(2)}</td><td style="color:var(--accent);font-weight:700">$${s.net_sales.toFixed(2)}</td><td>${s.transactions}</td><td><span class="badge ${s.source==='clover'?'badge-green':'badge-gray'}">${s.source}</span></td><td><button class="btn btn-red btn-sm" onclick="delSale(${s.id})">✕</button></td></tr>`).join('');
+}
+
+async function delSale(id){await db.from('daily_sales').delete().eq('id',id);loadSales();}
+
+// ═══ FINANCIALS ═══
+function calcP(){const r=parseFloat(document.getElementById('fin-rev').value)||0,e=parseFloat(document.getElementById('fin-exp').value)||0;document.getElementById('fin-net').textContent='$'+(r-e).toFixed(2);}
+
+async function saveFin(){
+  const month=document.getElementById('fin-month').value;
+  const revenue=parseFloat(document.getElementById('fin-rev').value)||0;
+  const expenses=parseFloat(document.getElementById('fin-exp').value)||0;
+  const notes=document.getElementById('fin-notes').value;
+  if(!month){toast('Select month','error');return;}
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('financials').upsert({month,revenue,expenses,net:revenue-expenses,notes},{onConflict:'month'});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{toast('Saved!');setSyncStatus('','Connected');loadFin();loadDash();}
+}
+
+async function loadFin(){
+  const {data}=await db.from('financials').select('*').order('month',{ascending:false});
+  const tbody=document.getElementById('fin-tbody');
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px;">No records</td></tr>';return;}
+  tbody.innerHTML=data.map(f=>`<tr><td style="font-weight:700">${f.month}</td><td style="color:var(--green);font-weight:700">$${f.revenue.toFixed(2)}</td><td style="color:var(--purple);font-weight:700">$${f.expenses.toFixed(2)}</td><td style="color:var(--orange);font-weight:800;font-size:16px">$${f.net.toFixed(2)}</td><td><button class="btn btn-red btn-sm" onclick="delFin(${f.id})">✕</button></td></tr>`).join('');
+}
+
+async function delFin(id){await db.from('financials').delete().eq('id',id);loadFin();}
+
+// ═══ EXPENSES ═══
+async function saveExp(){
+  const date=document.getElementById('exp-date').value,cat=document.getElementById('exp-cat').value,desc=document.getElementById('exp-desc').value,amount=parseFloat(document.getElementById('exp-amount').value)||0,paid_by=document.getElementById('exp-paid').value;
+  if(!date||!desc||!amount){toast('Fill all fields','error');return;}
+  const files=expFiles.map(f=>({name:f.name,size:f.size,type:f.type,dataUrl:f.dataUrl}));
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('expenses').insert({date,category:cat,description:desc,amount,paid_by,over500:amount>500,files});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{
+    expFiles=[];document.getElementById('exp-flist').innerHTML='';
+    document.getElementById('exp-date').value=document.getElementById('exp-desc').value=document.getElementById('exp-amount').value='';
+    if(amount>500)toast('⚠️ Over $500 — notify Manager per contract!','warn');
+    else toast('Expense saved!');
+    setSyncStatus('','Connected');loadExp();loadDash();
+  }
+}
+
+async function loadExp(){
+  const {data}=await db.from('expenses').select('*').order('date',{ascending:false});
+  const total=data?data.reduce((s,e)=>s+parseFloat(e.amount),0):0;
+  document.getElementById('exp-total').textContent='$'+total.toFixed(0);
+  const cats={};if(data)data.forEach(e=>cats[e.category]=(cats[e.category]||0)+parseFloat(e.amount));
+  document.getElementById('exp-cat-sum').innerHTML=Object.entries(cats).length?Object.entries(cats).map(([c,v])=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px;font-weight:600">${c}</span><span style="font-size:15px;font-weight:800;color:var(--purple)">$${v.toFixed(2)}</span></div><div class="progress"><div class="progress-fill" style="width:${total?(v/total*100):0}%;background:var(--purple)"></div></div><div style="height:6px"></div>`).join(''):'<div style="color:var(--text4);text-align:center;padding:12px;">No expenses</div>';
+  const ov=data?data.filter(e=>e.over500).length:0;
+  document.getElementById('exp-warn').innerHTML=ov?`<span class="badge badge-red">⚠️ ${ov} over $500</span>`:'';
+  const tbody=document.getElementById('exp-tbody');
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text4);padding:24px;">No expenses</td></tr>';return;}
+  tbody.innerHTML=data.map(e=>`<tr><td style="font-weight:700">${e.date}</td><td><span class="badge badge-purple">${e.category}</span></td><td>${e.description}</td><td style="font-weight:800;color:var(--purple);font-size:15px">$${parseFloat(e.amount).toFixed(2)}</td><td><span class="badge badge-blue">${e.paid_by}</span></td><td>${e.files&&e.files.length?`<button class="btn btn-gray btn-sm" onclick="viewFiles(${e.id},'expenses')">📎${e.files.length}</button>`:'—'}</td><td>${e.over500?'<span class="badge badge-red">⚠️ >$500</span>':'<span class="badge badge-green">OK</span>'}</td><td><button class="btn btn-red btn-sm" onclick="delExp(${e.id})">✕</button></td></tr>`).join('');
+}
+
+async function delExp(id){await db.from('expenses').delete().eq('id',id);loadExp();}
+
+// ═══ PURCHASE ORDERS ═══
+function addPI(){
+  const n=document.getElementById('pi-n').value.trim(),q=parseInt(document.getElementById('pi-q').value)||1,p=parseFloat(document.getElementById('pi-p').value)||0;
+  if(!n){toast('Enter item name','error');return;}
+  poItemsList.push({id:Date.now(),name:n,qty:q,price:p,sub:q*p});renderPIList();
+  document.getElementById('pi-n').value=document.getElementById('pi-q').value=document.getElementById('pi-p').value='';
+}
+function renderPIList(){
+  poRunTotal=poItemsList.reduce((s,i)=>s+i.sub,0);
+  document.getElementById('po-total').textContent='$'+poRunTotal.toFixed(2);
+  document.getElementById('po-items').innerHTML=poItemsList.map(i=>`<div class="po-item"><span style="flex:1;font-size:14px;font-weight:600">${i.name}</span><span style="font-size:13px;color:var(--text3);min-width:40px;text-align:center">×${i.qty}</span><span style="font-size:14px;font-weight:800;color:var(--green);min-width:70px;text-align:right">$${i.sub.toFixed(2)}</span><button class="btn btn-red btn-sm" onclick="rmPI(${i.id})">✕</button></div>`).join('');
+}
+function rmPI(id){poItemsList=poItemsList.filter(i=>i.id!==id);renderPIList();}
+
+async function savePO(){
+  const supplier=document.getElementById('po-sup').value,date=document.getElementById('po-date').value,due_date=document.getElementById('po-due').value,category=document.getElementById('po-cat').value,order_status=document.getElementById('po-status').value,pay_status=document.getElementById('po-pay-status').value,notes=document.getElementById('po-notes').value;
+  if(!supplier||!date){toast('Fill supplier and date','error');return;}
+  const files=poFiles.map(f=>({name:f.name,size:f.size,type:f.type,dataUrl:f.dataUrl}));
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('purchases').insert({supplier,date,due_date:due_date||null,category,order_status,pay_status,items:poItemsList,total:poRunTotal,notes,files});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{
+    poItemsList=[];poRunTotal=0;poFiles=[];
+    document.getElementById('po-items').innerHTML='';document.getElementById('po-total').textContent='$0.00';document.getElementById('po-flist').innerHTML='';
+    document.getElementById('po-sup').value=document.getElementById('po-date').value=document.getElementById('po-due').value=document.getElementById('po-notes').value='';
+    toast('Purchase order saved!');setSyncStatus('','Connected');loadPO();loadDash();
+  }
+}
+
+async function loadPO(){
+  const {data}=await db.from('purchases').select('*').order('date',{ascending:false});
+  const el=document.getElementById('po-list');
+  if(!data||!data.length){el.innerHTML='<div style="text-align:center;color:var(--text4);padding:32px;">No orders yet</div>';return;}
+  const oc={Pending:'badge-yellow',Ordered:'badge-blue',Received:'badge-green',Partial:'badge-orange'};
+  el.innerHTML=data.map(p=>{
+    const unpaid=p.pay_status!=='Paid';
+    return`<div class="${unpaid?'inv-card unpaid':'inv-card'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-size:17px;font-weight:800">${p.supplier}</div><div style="font-size:13px;color:var(--text3)">${p.date} · ${p.category}${p.due_date?' · Due: '+p.due_date:''}</div></div><div style="text-align:right"><span class="badge ${oc[p.order_status]||'badge-blue'}">${p.order_status}</span><div style="font-size:22px;font-weight:800;color:var(--green);margin-top:4px">$${parseFloat(p.total).toFixed(2)}</div></div></div>${p.items&&p.items.length?`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">${p.items.map(i=>i.name+' ×'+i.qty).join(' · ')}</div>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge ${unpaid?'badge-red':'badge-green'}">${unpaid?'❌ UNPAID':'✅ PAID'}</span>${unpaid?`<button class="btn btn-green btn-sm" onclick="markPOPaid(${p.id})">✅ Mark Paid</button>`:''}<select class="btn btn-gray btn-sm" style="cursor:pointer" onchange="updPOStatus(${p.id},this.value)"><option>Update Status...</option><option value="Pending">Pending</option><option value="Ordered">Ordered</option><option value="Received">Received</option><option value="Partial">Partial</option></select>${p.files&&p.files.length?`<button class="btn btn-gray btn-sm" onclick="viewFilesDB(${p.id},'purchases')">📎${p.files.length}</button>`:''}<button class="btn btn-red btn-sm" onclick="delPO(${p.id})">✕</button></div></div>`;
+  }).join('');
+}
+
+async function markPOPaid(id){await db.from('purchases').update({pay_status:'Paid'}).eq('id',id);loadPO();renderClosing();loadDash();toast('Marked as paid!');}
+async function updPOStatus(id,s){if(s.includes('...'))return;await db.from('purchases').update({order_status:s}).eq('id',id);loadPO();toast('Updated!');}
+async function delPO(id){await db.from('purchases').delete().eq('id',id);loadPO();loadDash();}
+
+// ═══ INVOICES ═══
+async function saveInv(){
+  const invoice_num=document.getElementById('inv-num').value,vendor=document.getElementById('inv-vendor').value,date=document.getElementById('inv-date').value,due_date=document.getElementById('inv-due').value,amount=parseFloat(document.getElementById('inv-amount').value)||0,status=document.getElementById('inv-status').value;
+  if(!vendor||!date||!amount){toast('Fill required fields','error');return;}
+  const files=invFiles.map(f=>({name:f.name,size:f.size,type:f.type,dataUrl:f.dataUrl}));
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('invoices').insert({invoice_num:invoice_num||`INV-${Date.now()}`,vendor,date,due_date:due_date||null,amount,status,files});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{
+    invFiles=[];document.getElementById('inv-flist').innerHTML='';
+    ['inv-num','inv-vendor','inv-date','inv-due','inv-amount'].forEach(id=>document.getElementById(id).value='');
+    toast('Invoice saved!');setSyncStatus('','Connected');loadInv();loadDash();
+  }
+}
+
+async function loadInv(){
+  const {data}=await db.from('invoices').select('*').order('date',{ascending:false});
+  const el=document.getElementById('inv-list');
+  if(!data||!data.length){el.innerHTML='<div style="text-align:center;color:var(--text4);padding:32px;">No invoices yet</div>';return;}
+  const now=new Date();
+  const sc={Unpaid:'badge-red',Paid:'badge-green',Partial:'badge-orange'};
+  el.innerHTML=data.map(inv=>{
+    const ov=inv.status==='Unpaid'&&inv.due_date&&new Date(inv.due_date)<now;
+    const unpaid=inv.status!=='Paid';
+    return`<div class="${ov?'inv-card overdue':unpaid?'inv-card unpaid':'inv-card'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-size:17px;font-weight:800">${inv.vendor}</div><div style="font-size:13px;color:var(--text3)">${inv.invoice_num} · ${inv.date}</div>${inv.due_date?`<div style="font-size:13px;font-weight:700;color:${ov?'var(--red)':'var(--text3)'}">Due: ${inv.due_date}${ov?' 🚨 OVERDUE':''}</div>`:''}</div><div style="text-align:right"><span class="badge ${sc[inv.status]||'badge-gray'}">${inv.status}</span><div style="font-size:22px;font-weight:800;color:${inv.status==='Paid'?'var(--green)':'var(--red)'};margin-top:4px">$${parseFloat(inv.amount).toFixed(2)}</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap">${unpaid?`<button class="btn btn-green btn-sm" onclick="markInvPaid(${inv.id})">✅ Mark Paid</button>`:''}<select class="btn btn-gray btn-sm" style="cursor:pointer" onchange="updInvStatus(${inv.id},this.value)"><option>Change Status...</option><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option><option value="Partial">Partial</option></select>${inv.files&&inv.files.length?`<button class="btn btn-gray btn-sm" onclick="viewFilesDB(${inv.id},'invoices')">📎${inv.files.length}</button>`:''}<button class="btn btn-red btn-sm" onclick="delInv(${inv.id})">✕</button></div></div>`;
+  }).join('');
+}
+
+async function markInvPaid(id){await db.from('invoices').update({status:'Paid'}).eq('id',id);loadInv();renderClosing();loadDash();toast('Marked as paid!');}
+async function updInvStatus(id,s){if(s.includes('...'))return;await db.from('invoices').update({status:s}).eq('id',id);loadInv();renderClosing();loadDash();toast('Updated!');}
+async function delInv(id){await db.from('invoices').delete().eq('id',id);loadInv();loadDash();}
+
+// ═══ MONTH CLOSING ═══
+async function renderClosing(){
+  const el=document.getElementById('closing-content');if(!el)return;
+  const {data:invData}=await db.from('invoices').select('*').neq('status','Paid');
+  const {data:poData}=await db.from('purchases').select('*').eq('pay_status','Unpaid');
+  const unpaidInv=invData||[], unpaidPO=poData||[];
+  const blocked=unpaidInv.length>0||unpaidPO.length>0;
+  // Update dashboard alert
+  const blk=document.getElementById('dash-block');
+  const blkR=document.getElementById('dash-block-reason');
+  const unp=document.getElementById('d-unpaid');
+  if(unp)unp.textContent=unpaidInv.length+unpaidPO.length;
+  if(blk){if(blocked){blk.style.display='block';if(blkR)blkR.textContent=`${unpaidInv.length} unpaid invoice(s) and ${unpaidPO.length} unpaid purchase order(s) must be paid before month closing.`;}else blk.style.display='none';}
+  if(!blocked){
+    el.innerHTML=`<div style="background:var(--green-light);border:2px solid #86efac;border-radius:20px;padding:40px;text-align:center"><div style="font-size:60px;margin-bottom:16px">✅</div><div style="font-size:26px;font-weight:800;color:var(--green);margin-bottom:10px">Month Can Be Closed!</div><div style="font-size:16px;color:#15803d;font-weight:600;line-height:1.6">All invoices and purchase orders are paid. The month is clear for closing.</div></div>`;
+    return;
+  }
+  let html=`<div class="block-banner"><div class="block-banner-title">🚫 MONTH CLOSING IS BLOCKED</div><div class="block-banner-sub">The following must be paid before this month can be closed:</div></div>`;
+  if(unpaidInv.length){
+    html+=`<div class="card" style="margin-bottom:16px;border:2px solid var(--red)"><div style="font-size:18px;font-weight:800;color:var(--red);margin-bottom:14px">❌ Unpaid Invoices (${unpaidInv.length})</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Vendor</th><th>Date</th><th>Due</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${unpaidInv.map(inv=>`<tr><td style="font-weight:700">${inv.invoice_num}</td><td>${inv.vendor}</td><td>${inv.date}</td><td style="color:var(--red);font-weight:700">${inv.due_date||'—'}</td><td style="font-weight:800;color:var(--red);font-size:16px">$${parseFloat(inv.amount).toFixed(2)}</td><td><span class="badge badge-${inv.status==='Partial'?'orange':'red'}">${inv.status}</span></td><td><button class="btn btn-green btn-sm" onclick="markInvPaid(${inv.id});renderClosing()">✅ Pay Now</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  if(unpaidPO.length){
+    html+=`<div class="card" style="border:2px solid var(--orange)"><div style="font-size:18px;font-weight:800;color:var(--orange);margin-bottom:14px">❌ Unpaid Purchase Orders (${unpaidPO.length})</div><div class="tbl-wrap"><table><thead><tr><th>Supplier</th><th>Date</th><th>Category</th><th>Total</th><th></th></tr></thead><tbody>${unpaidPO.map(p=>`<tr><td style="font-weight:700">${p.supplier}</td><td>${p.date}</td><td>${p.category}</td><td style="font-weight:800;color:var(--orange);font-size:16px">$${parseFloat(p.total).toFixed(2)}</td><td><button class="btn btn-green btn-sm" onclick="markPOPaid(${p.id});renderClosing()">✅ Pay Now</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  el.innerHTML=html;
+}
+
+// ═══ PERFORMANCE ═══
+const CRIT=[{k:'sales',l:'Sales Performance'},{k:'inventory',l:'Inventory Management'},{k:'staff',l:'Staff Supervision'},{k:'customer',l:'Customer Satisfaction'},{k:'punctuality',l:'Punctuality'},{k:'operations',l:'Overall Operations'},{k:'compliance',l:'Legal Compliance'},{k:'honesty',l:'Honesty & Integrity'},{k:'communication',l:'Communication'},{k:'initiative',l:'Initiative & Problem Solving'}];
+
+function initPerf(){
+  document.getElementById('perf-criteria').innerHTML=CRIT.map(c=>`<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><label style="text-transform:none;font-size:14px;letter-spacing:0">${c.l}</label><span id="sl-${c.k}" style="font-size:18px;font-weight:800;color:var(--accent)">3</span></div><input type="range" id="sc-${c.k}" min="1" max="5" value="3" style="padding:0;height:6px;cursor:pointer;accent-color:var(--accent);width:100%" oninput="updPerf()"></div>`).join('');
+  updPerf();
+}
+function updPerf(){
+  let total=0;CRIT.forEach(c=>{const v=parseInt(document.getElementById('sc-'+c.k)?.value||3);document.getElementById('sl-'+c.k).textContent=v;total+=v;});
+  const pct=(total/(CRIT.length*5))*100;
+  document.getElementById('perf-score').textContent=`${total}/${CRIT.length*5}`;
+  const gb=document.getElementById('perf-grade');
+  if(pct>=80)gb.innerHTML='<span class="badge badge-green" style="font-size:14px;padding:6px 16px">EXCELLENT</span>';
+  else if(pct>=60)gb.innerHTML='<span class="badge badge-blue" style="font-size:14px;padding:6px 16px">GOOD</span>';
+  else if(pct>=40)gb.innerHTML='<span class="badge badge-yellow" style="font-size:14px;padding:6px 16px">SATISFACTORY</span>';
+  else gb.innerHTML='<span class="badge badge-red" style="font-size:14px;padding:6px 16px">NEEDS IMPROVEMENT</span>';
+}
+
+async function saveReview(){
+  const date=document.getElementById('perf-date').value,period=document.getElementById('perf-period').value,notes=document.getElementById('perf-notes').value;
+  if(!date){toast('Select date','error');return;}
+  const scores={};let total=0;CRIT.forEach(c=>{const v=parseInt(document.getElementById('sc-'+c.k)?.value||3);scores[c.k]=v;total+=v;});
+  const pct=(total/(CRIT.length*5))*100;
+  const grade=pct>=80?'Excellent':pct>=60?'Good':pct>=40?'Satisfactory':'Needs Improvement';
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('reviews').insert({date,period,scores,total,pct,grade,notes});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{toast('Review saved!');setSyncStatus('','Connected');loadReviews();}
+}
+
+async function loadReviews(){
+  const {data}=await db.from('reviews').select('*').order('date',{ascending:false});
+  const el=document.getElementById('perf-history');
+  if(!data||!data.length){el.innerHTML='<div style="text-align:center;color:var(--text4);padding:32px;">No reviews yet</div>';return;}
+  const gc={Excellent:'badge-green',Good:'badge-blue',Satisfactory:'badge-yellow','Needs Improvement':'badge-red'};
+  el.innerHTML=data.map(r=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><div style="font-size:17px;font-weight:800">${r.period}</div><div style="font-size:13px;color:var(--text3)">${r.date}</div></div><div style="text-align:right"><span class="badge ${gc[r.grade]||'badge-blue'}">${r.grade}</span><div style="font-size:22px;font-weight:800;margin-top:4px">${r.total}/${CRIT.length*5}</div></div></div><div class="progress"><div class="progress-fill" style="width:${r.pct}%;background:${r.pct>=80?'var(--green)':r.pct>=60?'var(--accent)':r.pct>=40?'var(--yellow)':'var(--red)'}"></div></div>${r.notes?`<div style="font-size:14px;color:var(--text3);margin-top:10px;line-height:1.5">${r.notes}</div>`:''}<button class="btn btn-red btn-sm" style="margin-top:10px" onclick="delRev(${r.id})">✕ Delete</button></div>`).join('');
+}
+async function delRev(id){await db.from('reviews').delete().eq('id',id);loadReviews();}
+
+// ═══ PAYMENTS ═══
+async function savePay(){
+  const date=document.getElementById('pay-date').value,type=document.getElementById('pay-type').value,amount=parseFloat(document.getElementById('pay-amount').value)||0,method=document.getElementById('pay-method').value,notes=document.getElementById('pay-notes').value;
+  if(!date||!amount){toast('Fill date and amount','error');return;}
+  setSyncStatus('syncing','Saving...');
+  const {error}=await db.from('payments').insert({date,type,amount,method,notes});
+  if(error){toast('Error: '+error.message,'error');setSyncStatus('error','Error');}
+  else{document.getElementById('pay-date').value=document.getElementById('pay-amount').value=document.getElementById('pay-notes').value='';toast('Payment recorded!');setSyncStatus('','Connected');loadPay();}
+}
+
+async function loadPay(){
+  const {data}=await db.from('payments').select('*').order('date',{ascending:false});
+  const total=data?data.reduce((s,p)=>s+parseFloat(p.amount),0):0;
+  document.getElementById('pay-total').textContent='$'+total.toFixed(0);
+  const tbody=document.getElementById('pay-tbody');
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text4);padding:24px;">No payments</td></tr>';return;}
+  tbody.innerHTML=data.map(p=>`<tr><td style="font-weight:700">${p.date}</td><td><span class="badge badge-purple">${p.type}</span></td><td style="font-weight:800;color:var(--green);font-size:16px">$${parseFloat(p.amount).toFixed(2)}</td><td><span class="badge badge-blue">${p.method}</span></td><td><button class="btn btn-red btn-sm" onclick="delPay(${p.id})">✕</button></td></tr>`).join('');
+}
+async function delPay(id){await db.from('payments').delete().eq('id',id);loadPay();}
+
+// ═══ CLOVER ═══
+function saveCloverCreds(){
+  const mid=document.getElementById('clover-mid').value.trim();
+  const token=document.getElementById('clover-token').value.trim();
+  const env=document.getElementById('clover-env').value;
+  if(!mid||!token){toast('Fill Merchant ID and API Token','error');return;}
+  localStorage.setItem('clover_mid',mid);
+  localStorage.setItem('clover_token',token);
+  localStorage.setItem('clover_env',env);
+  document.getElementById('clover-status').innerHTML='<span style="color:var(--green)">✅ Credentials saved! Click "Sync Now" to test connection.</span>';
+  toast('Clover credentials saved!');
+}
+
+async function syncCloverNow(){
+  const mid=localStorage.getItem('clover_mid');
+  const token=localStorage.getItem('clover_token');
+  const env=localStorage.getItem('clover_env')||'https://api.clover.com';
+  if(!mid||!token){toast('Set Clover credentials first','warn');showPanel('clover',null);return;}
+  document.getElementById('clover-status').innerHTML='<span style="color:var(--accent)">🔄 Syncing from Clover...</span>';
+  setSyncStatus('syncing','Syncing Clover...');
+  try{
+    // Sync daily payments/sales
+    const today=new Date().toISOString().split('T')[0];
+    const startOfDay=new Date(); startOfDay.setHours(0,0,0,0);
+    const endOfDay=new Date(); endOfDay.setHours(23,59,59,999);
+    const payRes=await fetch(`${env}/v3/merchants/${mid}/payments?filter=createdTime>=${startOfDay.getTime()}&filter=createdTime<=${endOfDay.getTime()}&expand=order`,{headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}});
+    if(!payRes.ok)throw new Error(`Clover API error: ${payRes.status} ${payRes.statusText}`);
+    const payData=await payRes.json();
+    const payments=payData.elements||[];
+    const grossSales=payments.filter(p=>p.result==='SUCCESS').reduce((s,p)=>s+(p.amount||0),0)/100;
+    const netSales=payments.filter(p=>p.result==='SUCCESS').reduce((s,p)=>s+(p.netAmount||p.amount||0),0)/100;
+    const transCount=payments.filter(p=>p.result==='SUCCESS').length;
+    // Save to Supabase
+    await db.from('daily_sales').upsert({date:today,gross_sales:grossSales,net_sales:netSales,transactions:transCount,source:'clover'},{onConflict:'date'});
+    // Sync employee timesheets
+    const empRes=await fetch(`${env}/v3/merchants/${mid}/shifts?filter=inTime>=${startOfDay.getTime()}&expand=employee`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(empRes.ok){
+      const empData=await empRes.json();
+      const shifts=empData.elements||[];
+      for(const shift of shifts){
+        if(!shift.inTime)continue;
+        const shiftDate=new Date(shift.inTime).toISOString().split('T')[0];
+        const inT=new Date(shift.inTime).toTimeString().slice(0,5);
+        const outT=shift.outTime?new Date(shift.outTime).toTimeString().slice(0,5):null;
+        const hours=outT?((shift.outTime-shift.inTime)/3600000):null;
+        const empName=shift.employee?.name||'Employee';
+        await db.from('attendance').upsert({date:shiftDate,employee_name:empName,check_in:inT,check_out:outT,hours,source:'clover'},{onConflict:'date,employee_name,check_in'}).catch(()=>{});
+      }
+    }
+    const syncTime=new Date().toLocaleTimeString();
+    localStorage.setItem('last_clover_sync',syncTime);
+    document.getElementById('last-sync-time').textContent='Last sync: '+syncTime;
+    document.getElementById('clover-status').innerHTML=`<span style="color:var(--green)">✅ Synced! Sales: $${grossSales.toFixed(2)} | Transactions: ${transCount}</span>`;
+    setSyncStatus('','Connected');
+    toast(`Clover synced! $${grossSales.toFixed(2)} in sales today`);
+    loadSales();loadAtt();buildWeek('week-dash');loadDash();
+  }catch(e){
+    document.getElementById('clover-status').innerHTML=`<span style="color:var(--red)">❌ Error: ${e.message}. Check your API token and Merchant ID.</span>`;
+    setSyncStatus('error','Clover Error');
+    toast('Clover sync failed: '+e.message,'error');
+  }
+}
+
+async function testClover(){
+  const mid=localStorage.getItem('clover_mid');
+  const token=localStorage.getItem('clover_token');
+  const env=localStorage.getItem('clover_env')||'https://api.clover.com';
+  if(!mid||!token){toast('Save credentials first','warn');return;}
+  document.getElementById('clover-status').innerHTML='<span style="color:var(--accent)">🧪 Testing connection...</span>';
+  try{
+    const res=await fetch(`${env}/v3/merchants/${mid}`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(!res.ok)throw new Error(`${res.status}: ${res.statusText}`);
+    const data=await res.json();
+    document.getElementById('clover-status').innerHTML=`<span style="color:var(--green)">✅ Connected! Merchant: ${data.name}</span>`;
+    toast('Clover connected: '+data.name);
+  }catch(e){
+    document.getElementById('clover-status').innerHTML=`<span style="color:var(--red)">❌ ${e.message}</span>`;
+    toast('Connection failed','error');
+  }
+}
+
+// ═══ DASHBOARD ═══
+async function loadDash(){
+  await buildWeek('week-dash');
+  // Today's sales
+  const today=new Date().toISOString().split('T')[0];
+  const {data:todaySale}=await db.from('daily_sales').select('*').eq('date',today).single();
+  document.getElementById('d-today-sales').textContent=todaySale?'$'+parseFloat(todaySale.gross_sales).toFixed(0):'$0';
+  // Month sales total
+  const thisMonth=new Date().toISOString().slice(0,7);
+  const {data:monthSales}=await db.from('daily_sales').select('gross_sales').like('date',thisMonth+'%');
+  const monthTotal=monthSales?monthSales.reduce((s,r)=>s+parseFloat(r.gross_sales),0):0;
+  document.getElementById('d-month-sales').textContent='$'+monthTotal.toFixed(0);
+  // Monthly net profit
+  const {data:finData}=await db.from('financials').select('*').eq('month',thisMonth).single();
+  document.getElementById('d-profit').textContent=finData?'$'+parseFloat(finData.net).toFixed(0):'$0';
+  // Expenses
+  const {data:expData}=await db.from('expenses').select('amount').like('date',thisMonth+'%');
+  const expTotal=expData?expData.reduce((s,e)=>s+parseFloat(e.amount),0):0;
+  document.getElementById('d-exp').textContent='$'+expTotal.toFixed(0);
+  // Unpaid
+  const {data:unpaidInv}=await db.from('invoices').select('id').neq('status','Paid');
+  const {data:unpaidPO}=await db.from('purchases').select('id').eq('pay_status','Unpaid');
+  const totalUnpaid=(unpaidInv?.length||0)+(unpaidPO?.length||0);
+  document.getElementById('d-unpaid').textContent=totalUnpaid;
+  const blk=document.getElementById('dash-block');
+  if(blk){if(totalUnpaid>0){blk.style.display='block';document.getElementById('dash-block-reason').textContent=`${unpaidInv?.length||0} unpaid invoice(s) and ${unpaidPO?.length||0} unpaid purchase order(s) must be settled before month closing.`;}else blk.style.display='none';}
+  // Overdue
+  const nowStr=new Date().toISOString().split('T')[0];
+  const {data:overdueData}=await db.from('invoices').select('id').eq('status','Unpaid').lt('due_date',nowStr);
+  document.getElementById('d-overdue').textContent=overdueData?.length||0;
+  // Today breakdown
+  const breakdown=document.getElementById('today-breakdown');
+  if(breakdown){
+    breakdown.innerHTML=`
+      <div style="display:flex;justify-content:space-between;padding:10px;background:var(--green-light);border-radius:10px;border:1px solid #86efac">
+        <span style="font-weight:700;font-size:14px">Today's Sales</span>
+        <span style="font-weight:800;font-size:16px;color:var(--green)">${todaySale?'$'+parseFloat(todaySale.gross_sales).toFixed(2):'No data yet'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px;background:var(--accent-light);border-radius:10px;border:1px solid #93c5fd">
+        <span style="font-weight:700;font-size:14px">Transactions</span>
+        <span style="font-weight:800;font-size:16px;color:var(--accent)">${todaySale?todaySale.transactions:'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px;background:${totalUnpaid>0?'var(--red-light)':'var(--green-light)'};border-radius:10px;border:1px solid ${totalUnpaid>0?'#fca5a5':'#86efac'}">
+        <span style="font-weight:700;font-size:14px">Month Status</span>
+        <span style="font-weight:800;font-size:14px;color:${totalUnpaid>0?'var(--red)':'var(--green)'}">${totalUnpaid>0?'⚠️ '+totalUnpaid+' unpaid':'✅ Clear to close'}</span>
+      </div>
+      <button class="btn btn-blue btn-full" onclick="syncCloverNow()" style="margin-top:4px">🍀 Sync Clover Now</button>
+    `;
+  }
+  // Load last sync time
+  const lst=localStorage.getItem('last_clover_sync');
+  const lstEl=document.getElementById('last-sync-time');
+  if(lstEl&&lst)lstEl.textContent='Last sync: '+lst;
+  // Load clover creds into form
+  const mid=localStorage.getItem('clover_mid');
+  const token=localStorage.getItem('clover_token');
+  const midEl=document.getElementById('clover-mid');
+  const tokEl=document.getElementById('clover-token');
+  if(midEl&&mid)midEl.value=mid;
+  if(tokEl&&token)tokEl.value=token;
+}
+
+// ═══ FILES ═══
+function fSel(e,type){Array.from(e.target.files).forEach(f=>procFile(f,type));}
+function procFile(file,type){
+  const r=new FileReader();
+  r.onload=(e)=>{
+    const obj={id:Date.now()+Math.random(),name:file.name,size:file.size,type:file.type,dataUrl:e.target.result};
+    if(type==='exp'){expFiles.push(obj);renderFList('exp-flist',expFiles,'exp');}
+    else if(type==='po'){poFiles.push(obj);renderFList('po-flist',poFiles,'po');}
+    else if(type==='inv'){invFiles.push(obj);renderFList('inv-flist',invFiles,'inv');}
+  };
+  r.readAsDataURL(file);
+}
+function renderFList(cid,files,type){
+  document.getElementById(cid).innerHTML=files.map(f=>`<div class="file-item"><span style="font-size:20px">${f.type&&f.type.includes('pdf')?'📄':'🖼️'}</span><span class="file-item-name">${f.name}</span><span class="file-item-size">${(f.size/1024).toFixed(1)} KB</span><button class="file-item-del" onclick="rmFile('${f.id}','${type}')">✕</button></div>`).join('');
+}
+function rmFile(id,type){
+  const fid=parseFloat(id);
+  if(type==='exp'){expFiles=expFiles.filter(f=>f.id!==fid);renderFList('exp-flist',expFiles,'exp');}
+  else if(type==='po'){poFiles=poFiles.filter(f=>f.id!==fid);renderFList('po-flist',poFiles,'po');}
+  else if(type==='inv'){invFiles=invFiles.filter(f=>f.id!==fid);renderFList('inv-flist',invFiles,'inv');}
+}
+function dOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dLeave(id){document.getElementById(id).classList.remove('drag');}
+function dDrop(e,type){e.preventDefault();const m={exp:'exp-drop',po:'po-drop',inv:'inv-drop'};dLeave(m[type]);Array.from(e.dataTransfer.files).forEach(f=>procFile(f,type));}
+
+async function viewFilesDB(id,col){
+  let rec;
+  const tables={expenses:'expenses',purchases:'purchases',invoices:'invoices'};
+  const {data}=await db.from(tables[col]).select('files').eq('id',id).single();
+  if(!data||!data.files||!data.files.length){toast('No files attached','warn');return;}
+  document.getElementById('modal-title').textContent=`📎 Attached Files (${data.files.length})`;
+  document.getElementById('modal-body').innerHTML=data.files.map(f=>`<div style="margin-bottom:16px"><div style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:8px">${f.name} — ${(f.size/1024).toFixed(1)} KB</div>${f.type&&f.type.includes('pdf')?`<embed src="${f.dataUrl}" type="application/pdf" width="100%" height="400px" style="border-radius:10px">`:f.dataUrl&&f.dataUrl.startsWith('data:image')?`<img src="${f.dataUrl}" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border)">`:''}<div style="margin-top:8px"><a href="${f.dataUrl}" download="${f.name}" class="btn btn-gray btn-sm">⬇️ Download</a></div></div>`).join('');
+  document.getElementById('fmodal').style.display='flex';
+}
+function closeModal(){document.getElementById('fmodal').style.display='none';}
+
+// ═══ INIT ═══
+async function init(){
+  try{
+    // Test DB connection
+    const {error}=await db.from('attendance').select('id').limit(1);
+    if(error&&error.code==='42P01'){
+      // Tables don't exist yet
+      document.getElementById('loading').innerHTML=`<div style="text-align:center;padding:40px;max-width:500px"><div style="font-size:40px;margin-bottom:16px">⚠️</div><div style="font-size:20px;font-weight:800;margin-bottom:12px">Database Setup Required</div><div style="font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:20px">Please run the SQL setup file in your Supabase SQL Editor first.</div><div style="background:var(--accent-light);border:1.5px solid #93c5fd;border-radius:12px;padding:16px;font-size:13px;color:var(--accent);font-family:monospace;text-align:left">Go to: supabase.com → Your Project → SQL Editor → Paste the SQL file content → Run</div></div>`;
+      return;
+    }
+    // Set default dates
+    const today=new Date().toISOString().split('T')[0];
+    ['att-date','exp-date','po-date','po-due','inv-date','inv-due','perf-date','pay-date','sale-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+    const finM=document.getElementById('fin-month');if(finM)finM.value=new Date().toISOString().slice(0,7);
+    // Load clover creds
+    const mid=localStorage.getItem('clover_mid');const token=localStorage.getItem('clover_token');
+    const midEl=document.getElementById('clover-mid');const tokEl=document.getElementById('clover-token');
+    if(midEl&&mid)midEl.value=mid;if(tokEl&&token)tokEl.value=token;
+    // Init
+    initPerf();
+    await loadDash();
+    // Hide loading
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='block';
+    setSyncStatus('','Connected');
+    // Auto-sync clover if credentials exist
+    if(mid&&token){setTimeout(syncCloverNow,2000);}
+  }catch(e){
+    document.getElementById('loading').innerHTML=`<div style="text-align:center;padding:40px"><div style="font-size:40px">❌</div><div style="font-size:18px;font-weight:700;margin:12px 0">Connection Error</div><div style="color:var(--text3)">${e.message}</div></div>`;
+  }
+}
+
+init();
+
+// ═══ PWA SERVICE WORKER ═══
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// ═══ PWA INSTALL PROMPT ═══
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  // Don't show if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #0f172a; color: white; border-radius: 16px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.3); z-index: 9998;
+    max-width: 340px; width: 90%;
+  `;
+  banner.innerHTML = `
+    <div style="font-size:28px">📱</div>
+    <div style="flex:1">
+      <div style="font-weight:800;font-size:14px;margin-bottom:3px">Install App</div>
+      <div style="font-size:12px;opacity:.8">Add to your home screen for quick access</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button onclick="installApp()" style="background:#3b82f6;color:white;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer">Install</button>
+      <button onclick="document.getElementById('install-banner').remove()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer">Later</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    toast('App installed successfully! 🎉');
+    document.getElementById('install-banner')?.remove();
+  }
+  deferredPrompt = null;
+}
+
+// iOS install instructions
+window.addEventListener('load', () => {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone && !localStorage.getItem('ios-prompt-shown')) {
+    setTimeout(() => {
+      const banner = document.createElement('div');
+      banner.style.cssText = `
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: #0f172a; color: white; border-radius: 16px;
+        padding: 18px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.3);
+        z-index: 9998; max-width: 320px; width: 90%; text-align: center;
+      `;
+      banner.innerHTML = `
+        <div style="font-size:32px;margin-bottom:10px">📱</div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:8px">Install on iPhone</div>
+        <div style="font-size:13px;opacity:.85;line-height:1.6;margin-bottom:14px">
+          Tap <b>Share</b> button below<br>then <b>"Add to Home Screen"</b> 🏠
+        </div>
+        <div style="font-size:22px;margin-bottom:14px">⬆️ Share → Add to Home Screen</div>
+        <button onclick="this.parentElement.remove();localStorage.setItem('ios-prompt-shown','1')" 
+          style="background:#3b82f6;color:white;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer;width:100%">
+          Got it!
+        </button>
+      `;
+      document.body.appendChild(banner);
+    }, 2000);
+  }
+});
+</script>
+
+</body>
+</html>
